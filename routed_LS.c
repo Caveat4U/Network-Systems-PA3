@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
 	
 	while( fscanf(initialization_file, "<%c,%d,%c,%d,%d>\n", &source_router, &source_tcp_port, &destination_router, &destination_tcp_port, &link_cost) != EOF) 
 	{
+		// If we're looking at the correct part of the file.
 		if ( source_router == routerID )
 		{
 			// store the data
@@ -76,8 +77,9 @@ int main(int argc, char *argv[]) {
 			local_states[count].destination_router = destination_router;
 			local_states[count].destination_tcp_port = destination_tcp_port;
 			local_states[count].link_cost = link_cost;
-					
-			this_sock_addr.sin_port = htons(local_states[count].source_tcp_port);        //htons() sets the port # to network byte order
+			
+			// htons() sets the port # to network byte order		
+			this_sock_addr.sin_port = htons(local_states[count].source_tcp_port); 
 			
 			
 			// create the necessary socket and bind it
@@ -88,6 +90,13 @@ int main(int argc, char *argv[]) {
 				return EXIT_FAILURE;
 			}
 			
+			// TODO - can we go ahead and throw our listen in here?
+			// Can we use MAX_LINKED_STATES?
+			if (listen(local_states[count].sockfd, 10) < 0)
+			{
+				fprintf(stderr, "There was a problem listening.\n");
+				return EXIT_FAILURE;
+			}
 			count++;
 			printf("<%c,%d,%c,%d,%d>\n", source_router, source_tcp_port, destination_router, destination_tcp_port, link_cost);
 		}
@@ -96,10 +105,16 @@ int main(int argc, char *argv[]) {
 		
 	}
 	
+	// OK, so now we have an array of things in our current routing table.
+	// Next, we have to shoot out packets to any neighbors and exchange loving messages of adoration.
+	// Possible command to call:
+	// listen(), accept(), select()
+	
 	
 	
 	return EXIT_SUCCESS;
 }
+
 
 //Dijkstra’s Shortest Path Algorithm
 //Let N = set of nodes in graph
