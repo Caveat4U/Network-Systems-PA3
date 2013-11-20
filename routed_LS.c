@@ -64,53 +64,78 @@ int main(int argc, char *argv[]) {
 	this_sock_addr.sin_family = AF_INET;      		//address family
 	this_sock_addr.sin_addr.s_addr = INADDR_ANY;    //supplies the IP address of the local machine
 	
-	int count = 0;
-	
+	int num_local_states = 0;
 	while( fscanf(initialization_file, "<%c,%d,%c,%d,%d>\n", &source_router, &source_tcp_port, &destination_router, &destination_tcp_port, &link_cost) != EOF) 
 	{
 		// If we're looking at the correct part of the file.
 		if ( source_router == routerID )
 		{
 			// store the data
-			local_states[count].source_router = source_router;
-			local_states[count].source_tcp_port = source_tcp_port;
-			local_states[count].destination_router = destination_router;
-			local_states[count].destination_tcp_port = destination_tcp_port;
-			local_states[count].link_cost = link_cost;
+			local_states[num_local_states].source_router = source_router;
+			local_states[num_local_states].source_tcp_port = source_tcp_port;
+			local_states[num_local_states].destination_router = destination_router;
+			local_states[num_local_states].destination_tcp_port = destination_tcp_port;
+			local_states[num_local_states].link_cost = link_cost;
 			
 			// htons() sets the port # to network byte order		
-			this_sock_addr.sin_port = htons(local_states[count].source_tcp_port); 
+			this_sock_addr.sin_port = htons(local_states[num_local_states].source_tcp_port); 
 			
 			
 			// create the necessary socket and bind it
-			local_states[count].sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			if (bind(local_states[count].sockfd, (struct sockaddr *)&this_sock_addr, sizeof(this_sock_addr))<0)
+			local_states[num_local_states].sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			if (bind(local_states[num_local_states].sockfd, (struct sockaddr *)&this_sock_addr, sizeof(this_sock_addr))<0)
 			{
 				fprintf(stderr, "Could not bind socket to port.");
 				return EXIT_FAILURE;
 			}
 			
 			// TODO - can we go ahead and throw our listen in here?
-			// Can we use MAX_LINKED_STATES?
-			if (listen(local_states[count].sockfd, 10) < 0)
+			// Can we use MAX_LINKED_STATES to represent the number of queued connections we can have?
+			if (listen(local_states[num_local_states].sockfd, 10) < 0)
 			{
 				fprintf(stderr, "There was a problem listening.\n");
 				return EXIT_FAILURE;
 			}
-			count++;
+			num_local_states++;
 			printf("<%c,%d,%c,%d,%d>\n", source_router, source_tcp_port, destination_router, destination_tcp_port, link_cost);
 		}
-			
-		//sleep(5);
 		
 	}
 	
 	// OK, so now we have an array of things in our current routing table.
+	// They're bound and gagged/listening.
+	
 	// Next, we have to shoot out packets to any neighbors and exchange loving messages of adoration.
-	// Possible command to call:
-	// listen(), accept(), select()
+	// Possible commands to call:
+	//  accept(), select()
 	
+	// So that we don't have hangover problems, let's sleep it off.
+	sleep(20);
 	
+	// It's time to connect everything together. Hooray!
+	int i;
+	struct sockaddr_in client_shenanigans;
+	for( i = 0; i < num_local_states; i++ )
+	{
+		// Everything else in the struct above still applies just fine, so just change the port.
+		this_sock_addr.sin_port = htons(local_states[i].destination_tcp_port);
+		
+		if( connect(local_states[i].sockfd, (struct sockaddr *)&this_sock_addr, sizeof(this_sock_addr)) < 0 )
+		{
+			fprintf(stderr, "Oh no! Our connect failed. Crap!\n");
+			return EXIT_FAILURE;
+		}
+		
+		// Zero out the struct.
+		bzero(&client_shenanigans, sizeof(client_shenanigans)); 
+			
+		// accept everything we can.
+		// accept() basically dequeues this from the listen() world.
+		// All communication happens through this new socket, so let's overwrite the old one.
+		if((local_states[i].sockfd = accept(local_states[i].sockfd, (struct sockaddr *)&client_shenanigans, (socklen_t *)sizeof(client_shenanigans))) < 0) {
+			fprintf(stderr, "Could not accept stuff where we needed to accept stuff.\n");
+		}
+	}
 	
 	return EXIT_SUCCESS;
 }
