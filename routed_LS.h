@@ -1,23 +1,25 @@
+#define MAX_LINKED_STATES 10
+#define MAX_ROUTERS 24
 
-struct link{
+typedef struct link {
 	char destination_router;
-	int link_cost
-};
+	int link_cost;
+}link;
 
-struct lsp{
+typedef struct lsp{
 	char router_id;
 	int seq;
 	int ttl;
 	int length;
 	link link_table[MAX_LINKED_STATES];
-};
+}lsp;
 
-struct link_archive{
-	lsp archive[MAX_LINKED_STATES]
+typedef struct link_archive{
+	lsp archive[MAX_LINKED_STATES];
 	int length;
-};
+}link_archive;
 
-struct link_state {
+typedef struct link_state {
 	char source_router;
 	int source_tcp_port;
 	char destination_router;
@@ -26,26 +28,27 @@ struct link_state {
 	int l_sockfd; 	// Socket used for listening and connecting
 	int sockfd; 	// Socket for maintaining connection
 	int connected;
-};
+}link_state;
 
-struct routing_table_row {
+typedef struct routing_table_row {
 	char destination_router;
 	int source_tcp_port;
 	int destination_tcp_port;
 	int link_cost;
 	char next_hop;
-};
+}routing_table_row;
 
-struct routing_table {
-	routing_table_row table[MAX_ROUTERS]
+typedef struct routing_table {
+	routing_table_row table[MAX_ROUTERS];
 	int length;
-};
+}routing_table;
 
-struct router {
+typedef struct router {
 	char router_id;
 	int num_links;
-	int 
+	lsp source_lsp;
+	int lsp_seq;
 	link_state links[MAX_LINKED_STATES];
 	routing_table r_table;
 	link_archive l_archive;
-};
+}router;
