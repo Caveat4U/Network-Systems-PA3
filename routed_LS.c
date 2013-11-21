@@ -122,8 +122,8 @@ int main(int argc, char *argv[]) {
 		
 		if( connect(local_states[i].sockfd, (struct sockaddr *)&this_sock_addr, sizeof(this_sock_addr)) < 0 )
 		{
-			fprintf(stderr, "Oh no! Our connect failed. Crap!\n");
-			return EXIT_FAILURE;
+			fprintf(stderr, "Oh no! Our connect failed from %c to %c. Crap!\n", local_states[i].source_router, destination_router);
+			//return EXIT_FAILURE;
 		}
 		
 		// Zero out the struct.
@@ -134,6 +134,7 @@ int main(int argc, char *argv[]) {
 		// All communication happens through this new socket, so let's overwrite the old one.
 		if((local_states[i].sockfd = accept(local_states[i].sockfd, (struct sockaddr *)&client_shenanigans, (socklen_t *)sizeof(client_shenanigans))) < 0) {
 			fprintf(stderr, "Could not accept stuff where we needed to accept stuff.\n");
+			//return EXIT_FAILURE;
 		}
 	}
 	
