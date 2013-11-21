@@ -81,7 +81,7 @@ void print_header(Router r)
 	r.lsp.length
 	);
 	
-	// Print out the link table.
+	// Print out the link table in lsp.
 	for( i = 0; i < MAX_LINKED_STATES; i++)
 	{
 		// TODO: Leaving out invalid states...should I?
@@ -92,7 +92,40 @@ void print_header(Router r)
 			i,
 			r.lsp.link_table[i].destination_router,
 			r.lsp.link_table[i].link_cost
-			);	
+			);
 		}
 	}
+	
+	//Link_State links[MAX_LINKED_STATES];
+		//char source_router;
+		//int source_tcp_port;
+		//char destination_router;
+		//int dest_tcp_port;
+		//int link_cost;
+		//int l_sockfd; 	// Socket used for listening and connecting
+		//int sockfd; 	// Socket for maintaining connection
+		//int connected;
+		//struct sockaddr_in local_addr, remote_addr;
+	for ( i = 0; i < MAX_LINKED_STATES; i++)
+	{
+		fprintf(stderr,
+		"Link State %d:\
+			Source: %c on %d\
+			Destination: %c on %d\
+			Cost: %d\
+			Connected? %d",
+		i,
+		r.links[i].source_router,
+		r.links[i].source_tcp_port,
+		r.links[i].destination_router,
+		r.links[i].dest_tcp_port,
+		r.links[i].link_cost,
+		r.links[i].connected
+		);
+	}
+	
+	//Routing_Table r_table;
+	
+	//Link_Archive l_archive;
+	
 }
