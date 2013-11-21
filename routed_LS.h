@@ -4,12 +4,12 @@
 #define MAX_LINKED_STATES 10
 #define MAX_ROUTERS 24
 
-typedef struct {
+typedef struct LSP_Info{
 	char destination_router;
 	int link_cost;
 } LSP_Info;
 
-typedef struct {
+typedef struct LSP{
 	char router_id;
 	int seq;
 	int ttl;
@@ -17,12 +17,12 @@ typedef struct {
 	LSP_Info link_table[MAX_LINKED_STATES];
 }LSP;
 
-typedef struct {
+typedef struct Link_Archive{
 	LSP archive[MAX_LINKED_STATES];
 	int length;
 }Link_Archive;
 
-typedef struct {
+typedef struct Link_State{
 	char source_router;
 	int source_tcp_port;
 	char destination_router;
@@ -34,7 +34,7 @@ typedef struct {
 	struct sockaddr_in local_addr, remote_addr;
 }Link_State;
 
-typedef struct {
+typedef struct Routing_Table_Row{
 	char destination_router;
 	int source_tcp_port;
 	int dest_tcp_port;
@@ -42,12 +42,12 @@ typedef struct {
 	char next_hop;
 }Routing_Table_Row;
 
-typedef struct {
+typedef struct Routing_Table{
 	Routing_Table_Row row[MAX_ROUTERS];
 	int length;
 }Routing_Table;
 
-typedef struct {
+typedef struct Router{
 	char router_id;
 	int num_links;
 	int seq;
@@ -62,15 +62,11 @@ void print_header(Router r)
 {
 	int i;
 	fprintf(stderr,
-	"Router: %c\
-	Num Links: %d\
-	Seq: %d\
-	Time: %d\
-	LSP:\
-		seq: %d\
-		ttl: %d\
-		length: %d\
-		link_table:\
+	"Router: %c\n Num Links: %d\n Seq: %d\n Time: %d\n LSP:\n \
+		seq: %d\n \
+		ttl: %d\n \
+		length: %d\n \
+		link_table:\n \
 	",
 	r.router_id,
 	r.num_links,
@@ -88,7 +84,7 @@ void print_header(Router r)
 		if(r.lsp.link_table[i].destination_router != 0)
 		{
 			fprintf(stderr,
-			"		LSP %d Destination:%c with cost: %d",
+			"	LSP %d Destination:%c with cost: %d\n",
 			i,
 			r.lsp.link_table[i].destination_router,
 			r.lsp.link_table[i].link_cost
@@ -109,11 +105,11 @@ void print_header(Router r)
 	for ( i = 0; i < MAX_LINKED_STATES; i++)
 	{
 		fprintf(stderr,
-		"Link State %d:\
-			Source: %c on %d\
-			Destination: %c on %d\
-			Cost: %d\
-			Connected? %d",
+		"Link State %d:\n \
+			Source: %c on %d\n \
+			Destination: %c on %d\n \
+			Cost: %d\n \
+			Connected? %d\n ",
 		i,
 		r.links[i].source_router,
 		r.links[i].source_tcp_port,
@@ -135,11 +131,11 @@ void print_header(Router r)
 	for( i = 0; i < r.r_table.length; i++)
 	{
 		fprintf(stderr,
-		"Routing Table Row %d:\
-			Destination: %c\
-			Ports: %d => %d\
-			Cost: %d\
-			Next Hop: %c",
+		"\n Routing Table Row %d:\n \
+			Destination: %c\n \
+			Ports: %d => %d\n \
+			Cost: %d\n \
+			Next Hop: %c\n",
 		i,
 		r.r_table.row[i].destination_router,
 		r.r_table.row[i].source_tcp_port,

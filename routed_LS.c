@@ -56,15 +56,14 @@ int main(int argc, char *argv[]) {
 	//<A,9701,B,9704,4>
 	
 	// initialize variables and data structures.
-	char source_router = 'Z';
-	int source_tcp_port = -999;
-	char destination_router = 'Z';
-	int destination_tcp_port = -999;
-	int link_cost = -999;
+	char source_router;
+	int source_tcp_port;
+	char destination_router;
+	int destination_tcp_port;
+	int link_cost;
 	
 	time_t curr_time;
 	router.l_archive.length = 0;
-	LSP buffer;
 
 	printf("Router: %c\n", router.router_id);
 	printf("Immediate neighbors:\n");
@@ -81,22 +80,23 @@ int main(int argc, char *argv[]) {
 			router.links[router.num_links].destination_router = destination_router;
 			router.links[router.num_links].dest_tcp_port = destination_tcp_port;
 			router.links[router.num_links].link_cost = link_cost;
-			router.num_links++;
-			printf("Destination RID: %c, Destination Port: %d, Source Port: %d, Cost: %d>\n", 
-						destination_router, destination_tcp_port, source_tcp_port, link_cost);
+			router.links[router.num_links].connected = 0;
+			printf("Link Num: %d Destination RID: %c, Destination Port: %d, Source Port: %d, Cost: %d\n", 
+						router.num_links+1, router.links[router.num_links].destination_router, 
+						router.links[router.num_links].dest_tcp_port, router.links[router.num_links].source_tcp_port, 
+						router.links[router.num_links].link_cost);
+			router.num_links += 1;
 		}
 	}
-	
-	fclose(init_file);
-	
+		
 	int i;
-	for (i = 0; i < router.num_links; i++);
+	for (i = 0; i < router.num_links; i++)
 	{
 		if((router.links[i].l_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		{
 			printf("Socket creation for Router %c failed.\n", router.links[i].source_router);
 		}	
-		
+		printf("Dest TCP Port: %d\n", router.links[i].dest_tcp_port);
 		// Clear socket buffers
 		bzero(&router.links[i].local_addr, sizeof(router.links[i].local_addr));
 		bzero(&router.links[i].remote_addr, sizeof(router.links[i].local_addr));
