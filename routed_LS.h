@@ -26,7 +26,7 @@ typedef struct Link_State {
 	char source_router;
 	int source_tcp_port;
 	char destination_router;
-	int destination_tcp_port;
+	int dest_tcp_port;
 	int link_cost;
 	int l_sockfd; 	// Socket used for listening and connecting
 	int sockfd; 	// Socket for maintaining connection
@@ -37,21 +37,22 @@ typedef struct Link_State {
 typedef struct Routing_Table_Row {
 	char destination_router;
 	int source_tcp_port;
-	int destination_tcp_port;
+	int dest_tcp_port;
 	int link_cost;
 	char next_hop;
 }Routing_Table_Row;
 
 typedef struct Routing_Table {
-	Routing_Table_Row table[MAX_ROUTERS];
+	Routing_Table_Row row[MAX_ROUTERS];
 	int length;
 }Routing_Table;
 
 typedef struct Router {
 	char router_id;
 	int num_links;
-	LSP source_lsp;
-	int lsp_seq;
+	int seq;
+	time_t time;
+	LSP lsp;
 	Link_State links[MAX_LINKED_STATES];
 	Routing_Table r_table;
 	Link_Archive l_archive;
