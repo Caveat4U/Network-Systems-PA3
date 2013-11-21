@@ -143,6 +143,13 @@ int main(int argc, char *argv[]) {
 				printf("Could not bind to socket for %c to %c (%d -> %d)\n", 
 						router.links[j].source_router, router.links[j].destination_router,
 						router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
+				fclose(log_file);
+	
+				for (i=0; i<router.num_links; i++)
+				{
+					close(router.links[i].sockfd);
+					close(router.links[i].l_sockfd);
+				}
 				exit(1);
 			}
 			//make socket non blocking.
@@ -226,6 +233,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
+	
 	fclose(log_file);
 	
     for (i=0; i<router.num_links; i++)
