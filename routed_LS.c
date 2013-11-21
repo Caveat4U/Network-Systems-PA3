@@ -171,6 +171,8 @@ int main(int argc, char *argv[]) {
 			}	
 		}
 	}
+	print_header(&router, log_file);
+	fclose(log_file);
 	
 	//Start timer for timeouts/sleep
 	time(&router.time);
@@ -208,7 +210,7 @@ int main(int argc, char *argv[]) {
 			//Accept link
 			if(router.links[j].connected == 0)
 			{
-				router.links[j].sockfd = accept(router.links[j].l_sockfd, NULL, sizeof(struct sockaddr_in));
+				router.links[j].sockfd = accept(router.links[j].l_sockfd, NULL, (socklen_t*)sizeof(struct sockaddr_in));
 				//Establish connection
 				if(router.links[j].sockfd > 0)
 				{
@@ -235,7 +237,7 @@ int main(int argc, char *argv[]) {
 			{
 				if(router.links[k].connected)
 				{
-					if((nbytes = send(router.links[i].sockfd, &router.lsp, sizeof(LSP), 0)) == -1)
+					if((nbytes = send(router.links[k].sockfd, &router.lsp, sizeof(LSP), 0)) == -1)
 					{
 						printf("Failed to send from %c to %c \n",
 								router.links[k].source_router, router.links[k].destination_router);
@@ -246,13 +248,27 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		}
+		
+		int keep_lsp; //keep(!0) or discard(0) lsp
 		for( i = 0; i < router.num_links; i++)
 		{
 			if(router.links[i].connected)
 			{
 				if((nbytes = recv(router.links[i].sockfd, &buffer, sizeof(LSP), 0)) < 0)
 				{
-					//printf("LSP %d Received from %c", buffer.router_id, buffer.seq);
+					printf("LSP %d Received from %c", buffer.router_id, buffer.seq);
+					if (buffer.ttl <= 0)
+					{
+						keep_lsp = 0;
+					}
+					
+					for(j = 0; j < router.l_archive.length; j++)
+					{
+						if(buffer.router_id == router.l_archive.archive[j].router_id)
+						{
+							keep_lsp = 1;
+						}
+					}
 				}
 			}
 		}
