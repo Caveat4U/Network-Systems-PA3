@@ -108,20 +108,23 @@ void print_header(Router r)
 		//struct sockaddr_in local_addr, remote_addr;
 	for ( i = 0; i < MAX_LINKED_STATES; i++)
 	{
-		fprintf(stderr,
-		"Link State %d:\
-			Source: %c on %d\
-			Destination: %c on %d\
-			Cost: %d\
-			Connected? %d",
-		i,
-		r.links[i].source_router,
-		r.links[i].source_tcp_port,
-		r.links[i].destination_router,
-		r.links[i].dest_tcp_port,
-		r.links[i].link_cost,
-		r.links[i].connected
-		);
+		if(r.links[i].source_router!=0)
+		{
+			fprintf(stderr,
+			"Link State %d:\
+				Source: %c on %d\
+				Destination: %c on %d\
+				Cost: %d\
+				Connected? %d",
+			i,
+			r.links[i].source_router,
+			r.links[i].source_tcp_port,
+			r.links[i].destination_router,
+			r.links[i].dest_tcp_port,
+			r.links[i].link_cost,
+			r.links[i].connected
+			);
+		}
 	}
 	
 	//Routing_Table r_table;
@@ -134,19 +137,22 @@ void print_header(Router r)
 		//int length;
 	for( i = 0; i < r.r_table.length; i++)
 	{
-		fprintf(stderr,
-		"Routing Table Row %d:\
-			Destination: %c\
-			Ports: %d => %d\
-			Cost: %d\
-			Next Hop: %c",
-		i,
-		r.r_table.row[i].destination_router,
-		r.r_table.row[i].source_tcp_port,
-		r.r_table.row[i].dest_tcp_port,
-		r.r_table.row[i].link_cost,
-		r.r_table.row[i].next_hop
-		);
+		if(r.r_table.row[i].destination_router != 0)
+		{
+			fprintf(stderr,
+			"Routing Table Row %d:\
+				Destination: %c\
+				Ports: %d => %d\
+				Cost: %d\
+				Next Hop: %c",
+			i,
+			r.r_table.row[i].destination_router,
+			r.r_table.row[i].source_tcp_port,
+			r.r_table.row[i].dest_tcp_port,
+			r.r_table.row[i].link_cost,
+			r.r_table.row[i].next_hop
+			);
+		}
 	}
 	
 	
