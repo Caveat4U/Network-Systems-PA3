@@ -113,14 +113,11 @@ int main(int argc, char *argv[]) {
 		// Flag to check on connection later
 		router.links[i].connected = 0;
 	}
-
-	sleep(10); 
 	
 	int j;
 	for (j = 0; j < router.num_links; j++)
 	{
-		if(connect(router.links[j].l_sockfd, (struct sockaddr*)&(router.links[j].remote_addr),
-					sizeof(router.links[j].remote_addr)) == 0)
+		if(connect(router.links[j].l_sockfd, (struct sockaddr*)&(router.links[j].remote_addr), sizeof(router.links[j].remote_addr)) == 0)
 		{
 			router.links[j].connected = 1;
 			router.links[j].sockfd = router.links[j].l_sockfd;
@@ -229,8 +226,14 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-	sleep(20);
-	return EXIT_SUCCESS;
+	fclose(log_file);
+	
+    for (i=0; i<router.num_links; i++)
+    {
+        close(router.links[i].sockfd);
+        close(router.links[i].l_sockfd);
+    }
+    return 0;
 }
 
 
