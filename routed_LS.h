@@ -1,17 +1,17 @@
 #define MAX_LINKED_STATES 10
 #define MAX_ROUTERS 24
 
-typedef struct link {
+typedef struct lsp_info {
 	char destination_router;
 	int link_cost;
-}link;
+} lsp_info;
 
 typedef struct lsp{
 	char router_id;
 	int seq;
 	int ttl;
 	int length;
-	link link_table[MAX_LINKED_STATES];
+	lsp_info link_table[MAX_LINKED_STATES];
 }lsp;
 
 typedef struct link_archive{
