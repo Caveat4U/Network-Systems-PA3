@@ -1,8 +1,8 @@
 #!/bin/bash
 
-gnome-terminal -x ./routedLS A logA.txt PA3_initialization.txt -t "Router A"&
-gnome-terminal -x ./routedLS B logB.txt PA3_initialization.txt -t "Router B"&
-gnome-terminal -x ./routedLS C logC.txt PA3_initialization.txt -t "Router C"&
-gnome-terminal -x ./routedLS D logD.txt PA3_initialization.txt -t "Router D"&
-gnome-terminal -x ./routedLS E logE.txt PA3_initialization.txt -t "Router E"&
-gnome-terminal -x ./routedLS F logF.txt PA3_initialization.txt -t "Router F"&
+gnome-terminal -e "./routedLS A logA.txt PA3_initialization.txt" -t "Router A"&
+gnome-terminal -e "./routedLS B logB.txt PA3_initialization.txt" -t "Router B"&
+gnome-terminal -e "./routedLS C logC.txt PA3_initialization.txt" -t "Router C"&
+gnome-terminal -e "./routedLS D logD.txt PA3_initialization.txt" -t "Router D"&
+gnome-terminal -e "./routedLS E logE.txt PA3_initialization.txt" -t "Router E"&
+gnome-terminal -e "./routedLS F logF.txt PA3_initialization.txt" -t "Router F"&
