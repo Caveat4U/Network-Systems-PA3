@@ -125,6 +125,30 @@ void print_header(Router r)
 	}
 	
 	//Routing_Table r_table;
+		//Routing_Table_Row row[MAX_ROUTERS];
+			//char destination_router;
+			//int source_tcp_port;
+			//int dest_tcp_port;
+			//int link_cost;
+			//char next_hop;
+		//int length;
+	for( i = 0; i < r.r_table.length; i++)
+	{
+		fprintf(stderr,
+		"Routing Table Row %d:\
+			Destination: %c\
+			Ports: %d => %d\
+			Cost: %d\
+			Next Hop: %c",
+		i,
+		r.r_table.row[i].destination_router,
+		r.r_table.row[i].source_tcp_port,
+		r.r_table.row[i].dest_tcp_port,
+		r.r_table.row[i].link_cost,
+		r.r_table.row[i].next_hop
+		);
+	}
+	
 	
 	//Link_Archive l_archive;
 	
