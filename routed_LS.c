@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
 			//Accept link
 			if(router.links[j].connected == 0)
 			{
-				router.links[j].sockfd = accept(router.links[j].l_sockfd, NULL, sizeof(struct sockaddr_in));
+				router.links[j].sockfd = accept(router.links[j].l_sockfd, NULL, (socklen_t*)sizeof(struct sockaddr_in));
 				//Establish connection
 				if(router.links[j].sockfd > 0)
 				{
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
 			{
 				if(router.links[k].connected)
 				{
-					if((nbytes = send(router.links[i].sockfd, &router.lsp, sizeof(LSP), 0)) == -1)
+					if((nbytes = send(router.links[k].sockfd, &router.lsp, sizeof(LSP), 0)) == -1)
 					{
 						printf("Failed to send from %c to %c \n",
 								router.links[k].source_router, router.links[k].destination_router);
