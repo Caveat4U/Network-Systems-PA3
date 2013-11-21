@@ -1,25 +1,28 @@
+
+#include <netinet/in.h>
+
 #define MAX_LINKED_STATES 10
 #define MAX_ROUTERS 24
 
-typedef struct lsp_info {
+typedef struct LSP_Info {
 	char destination_router;
 	int link_cost;
-} lsp_info;
+} LSP_Info;
 
-typedef struct lsp{
+typedef struct LSP{
 	char router_id;
 	int seq;
 	int ttl;
 	int length;
-	lsp_info link_table[MAX_LINKED_STATES];
-}lsp;
+	LSP_Info link_table[MAX_LINKED_STATES];
+}LSP;
 
-typedef struct link_archive{
-	lsp archive[MAX_LINKED_STATES];
+typedef struct Link_Archive{
+	LSP archive[MAX_LINKED_STATES];
 	int length;
-}link_archive;
+}Link_Archive;
 
-typedef struct link_state {
+typedef struct Link_State {
 	char source_router;
 	int source_tcp_port;
 	char destination_router;
@@ -28,27 +31,28 @@ typedef struct link_state {
 	int l_sockfd; 	// Socket used for listening and connecting
 	int sockfd; 	// Socket for maintaining connection
 	int connected;
-}link_state;
+	struct sockaddr_in local_addr, remote_addr;
+}Link_State;
 
-typedef struct routing_table_row {
+typedef struct Routing_Table_Row {
 	char destination_router;
 	int source_tcp_port;
 	int destination_tcp_port;
 	int link_cost;
 	char next_hop;
-}routing_table_row;
+}Routing_Table_Row;
 
-typedef struct routing_table {
-	routing_table_row table[MAX_ROUTERS];
+typedef struct Routing_Table {
+	Routing_Table_Row table[MAX_ROUTERS];
 	int length;
-}routing_table;
+}Routing_Table;
 
-typedef struct router {
+typedef struct Router {
 	char router_id;
 	int num_links;
-	lsp source_lsp;
+	LSP source_lsp;
 	int lsp_seq;
-	link_state links[MAX_LINKED_STATES];
-	routing_table r_table;
-	link_archive l_archive;
-}router;
+	Link_State links[MAX_LINKED_STATES];
+	Routing_Table r_table;
+	Link_Archive l_archive;
+}Router;
