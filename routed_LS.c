@@ -213,12 +213,12 @@ int main(int argc, char *argv[]) {
 				if(router.links[j].sockfd > 0)
 				{
 					router.links[j].connected = 1;
-					printf("Connected %c to %c", 
+					printf("Connected from %c to %c \n", 
 							router.links[j].source_router, router.links[j].destination_router);
 					//unblock socket
 					if(fcntl(router.links[j].sockfd, F_SETFL, O_NDELAY) < 0)
 					{
-						printf("Could not unblock socket for %c to %c",
+						printf("Could not unblock socket for %c to %c \n",
 								router.links[j].source_router, router.links[j].destination_router);
 					}
 				}
@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
 			{
 				if((nbytes = recv(router.links[i].sockfd, &buffer, sizeof(LSP), 0)) < 0)
 				{
-					printf("LSP %d Received from %c", buffer.router_id, buffer.seq);
+					//printf("LSP %d Received from %c", buffer.router_id, buffer.seq);
 				}
 			}
 		}
