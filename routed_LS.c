@@ -21,6 +21,12 @@
 #define INF -999
 #define MAX_LINKED_STATES 10
 
+// Making these global so they can be killed by the signal exit.
+Router router;
+FILE* log_file;
+
+void graceful_exit();
+
 int main(int argc, char *argv[]) {
 	if (argc != 4)
 	{
@@ -29,12 +35,10 @@ int main(int argc, char *argv[]) {
 	}
 	
 	//routerID argv[1]
-	Router router;
 	router.router_id =  argv[1][0];
 	router.num_links = 0;
 	
 	//LogFileName argv[2]
-	FILE* log_file;
 	log_file = fopen(argv[2], "w+");
 	if(log_file == NULL)
 	{
@@ -203,6 +207,7 @@ int main(int argc, char *argv[]) {
 	//Listen for LSP's
 	while(1)
 	{
+		signal(SIGINT, graceful_exit);
 		for(j = 0; j < router.num_links; j++)
 		{
 			//Accept link
@@ -252,6 +257,16 @@ int main(int argc, char *argv[]) {
 			{
 				if((nbytes = recv(router.links[i].sockfd, &buffer, sizeof(LSP), 0)) < 0)
 				{
+					// If we receive an exit gracefully code.
+					if(buffer.seq == -999)
+					{
+						for (i=0; i<router.num_links; i++)
+						{
+							close(router.links[i].sockfd);
+							close(router.links[i].l_sockfd);
+						}
+						return EXIT_SUCCESS;
+					}
 					//printf("LSP %d Received from %c", buffer.router_id, buffer.seq);
 				}
 			}
@@ -288,3 +303,41 @@ int main(int argc, char *argv[]) {
 //Recalculate C(n) = MIN (C(n), C(E) + l(E,n)) for all nodes n not yet in SPT
 //Loop again, select node A = has lowest cost path
 //continues on slide 11
+
+void graceful_exit()
+{ 		 
+	// This is here in case the OS reset the signal handler after each call.
+	// That way this program can finish even if you press ctrl+c a bunch of times.
+	signal(SIGINT, graceful_exit);
+ 
+	printf("you have pressed ctrl-c \n");
+	
+	int i, nbytes;
+	// Send the closing packet
+	for(i = 0; i < router.num_links; i++)
+	{
+		if(router.links[i].connected)
+		{
+			router.lsp.seq = -999;
+			if((nbytes = send(router.links[i].sockfd, &router.lsp, sizeof(LSP), 0)) == -1)
+			{
+				printf("Failed to send from %c to %c \n",
+						router.links[i].source_router, router.links[i].destination_router);
+			}else{
+				printf("Sent LSP from %c to %c \n",
+						router.links[i].source_router, router.links[i].destination_router);
+			}
+		}
+	}
+	
+	// Close the local connections.
+	for (i=0; i<router.num_links; i++)
+	{
+		close(router.links[i].sockfd);
+		close(router.links[i].l_sockfd);
+	}
+	
+	// Close the log file
+	fclose(log_file);
+	exit(0);
+}
