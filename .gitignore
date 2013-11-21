@@ -19,4 +19,4 @@
 routedLS
 
 # Log files
-log.txt
+log*.txt
