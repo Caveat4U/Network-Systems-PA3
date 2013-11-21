@@ -84,14 +84,15 @@ int main(int argc, char *argv[]) {
 			router.num_links++;
 			printf("Destination RID: %c, Destination Port: %d, Source Port: %d, Cost: %d>\n", 
 						destination_router, destination_tcp_port, source_tcp_port, link_cost);
-
 		}
 	}
+	
+	fclose(init_file);
 	
 	int i;
 	for (i = 0; i < router.num_links; i++);
 	{
-		if((router.links[i].l_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+		if((router.links[i].l_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		{
 			printf("Socket creation for Router %c failed.\n", router.links[i].source_router);
 		}	
@@ -113,6 +114,7 @@ int main(int argc, char *argv[]) {
 		// Flag to check on connection later
 		router.links[i].connected = 0;
 	}
+	sleep(10);
 	
 	int j;
 	for (j = 0; j < router.num_links; j++)
