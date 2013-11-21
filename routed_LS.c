@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
 	
 	time_t curr_time;
 	router.l_archive.length = 0;
+	LSP buffer;
 
 	printf("Router: %c\n", router.router_id);
 	printf("Immediate neighbors:\n");
@@ -88,6 +89,7 @@ int main(int argc, char *argv[]) {
 			router.num_links += 1;
 		}
 	}
+	fclose(init_file);
 		
 	int i;
 	for (i = 0; i < router.num_links; i++)
@@ -96,7 +98,6 @@ int main(int argc, char *argv[]) {
 		{
 			printf("Socket creation for Router %c failed.\n", router.links[i].source_router);
 		}	
-		printf("Dest TCP Port: %d\n", router.links[i].dest_tcp_port);
 		// Clear socket buffers
 		bzero(&router.links[i].local_addr, sizeof(router.links[i].local_addr));
 		bzero(&router.links[i].remote_addr, sizeof(router.links[i].local_addr));
@@ -140,7 +141,7 @@ int main(int argc, char *argv[]) {
 						router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
 			}
 			//bind socket to local_addr
-			if(bind(router.links[j].l_sockfd, (struct sockaddr*)&(router.links[j].local_addr), sizeof(router.links[j].local_addr)) < 0);
+			if(bind(router.links[j].l_sockfd, (struct sockaddr*)&(router.links[j].local_addr), sizeof(router.links[j].local_addr)) < 0)
 			{
 				printf("Could not bind to socket for %c to %c (%d -> %d)\n", 
 						router.links[j].source_router, router.links[j].destination_router,
@@ -224,6 +225,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 		//update/synchronize time and send lsp's
+		int nbytes;
 		time(&curr_time);
 		if(difftime(curr_time, router.time) >= 5.0)
 		{
@@ -231,12 +233,31 @@ int main(int argc, char *argv[]) {
 			router.lsp.seq++;
 			for(k = 0; k < router.num_links; k++)
 			{
-				
+				if(router.links[k].connected)
+				{
+					if((nbytes = send(router.links[i].sockfd, &router.lsp, sizeof(LSP), 0)) == -1)
+					{
+						printf("Failed to send from %c to %c \n",
+								router.links[k].source_router, router.links[k].destination_router);
+					}else{
+						printf("Sent LSP from %c to %c \n",
+								router.links[k].source_router, router.links[k].destination_router);
+					}
+				}
 			}
 		}
+		for( i = 0; i < router.num_links; i++)
+		{
+			if(router.links[i].connected)
+			{
+				if((nbytes = recv(router.links[i].sockfd, &buffer, sizeof(LSP), 0)) < 0)
+				{
+					printf("LSP %d Received from %c", buffer.router_id, buffer.seq);
+				}
+			}
+		}
+		
 	}
-	
-	fclose(log_file);
 	
     for (i=0; i<router.num_links; i++)
     {
