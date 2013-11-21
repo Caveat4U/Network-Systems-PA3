@@ -4,12 +4,12 @@
 #define MAX_LINKED_STATES 10
 #define MAX_ROUTERS 24
 
-typedef struct LSP_Info {
+typedef struct {
 	char destination_router;
 	int link_cost;
 } LSP_Info;
 
-typedef struct LSP{
+typedef struct {
 	char router_id;
 	int seq;
 	int ttl;
@@ -17,12 +17,12 @@ typedef struct LSP{
 	LSP_Info link_table[MAX_LINKED_STATES];
 }LSP;
 
-typedef struct Link_Archive{
+typedef struct {
 	LSP archive[MAX_LINKED_STATES];
 	int length;
 }Link_Archive;
 
-typedef struct Link_State {
+typedef struct {
 	char source_router;
 	int source_tcp_port;
 	char destination_router;
@@ -34,7 +34,7 @@ typedef struct Link_State {
 	struct sockaddr_in local_addr, remote_addr;
 }Link_State;
 
-typedef struct Routing_Table_Row {
+typedef struct {
 	char destination_router;
 	int source_tcp_port;
 	int dest_tcp_port;
@@ -42,12 +42,12 @@ typedef struct Routing_Table_Row {
 	char next_hop;
 }Routing_Table_Row;
 
-typedef struct Routing_Table {
+typedef struct {
 	Routing_Table_Row row[MAX_ROUTERS];
 	int length;
 }Routing_Table;
 
-typedef struct Router {
+typedef struct {
 	char router_id;
 	int num_links;
 	int seq;

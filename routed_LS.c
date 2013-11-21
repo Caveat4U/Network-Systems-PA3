@@ -50,10 +50,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Initialization file %s could not be opened.\n", argv[3]);
 		return EXIT_FAILURE;
 	}
-	
-	// Create a storage mechanism for all the link states.
-	Link_State link;
-	
+
 	// Parse the initialization file.
 	// File format: <source router, source TCP port, destination router, destination TCP port, link cost>
 	//<A,9701,B,9704,4>
@@ -65,8 +62,7 @@ int main(int argc, char *argv[]) {
 	int destination_tcp_port = -999;
 	int link_cost = -999;
 	
-	struct sockaddr_in local_addr, remote_addr;
-	time_t cur_time;
+	time_t curr_time;
 	router.l_archive.length = 0;
 	LSP buffer;
 
@@ -77,28 +73,27 @@ int main(int argc, char *argv[]) {
 					&destination_router, &destination_tcp_port, &link_cost) != EOF) 
 	{
 		// If we're looking at the correct part of the file.
-		if ( source_router == router.router_id )
+		if (source_router == router.router_id)
 		{
 			// Store data in the link state, increment num_links
-			link = router.links[router.num_links];
-			link.source_router = source_router;
-			link.source_tcp_port = source_tcp_port;
-			link.destination_router = destination_router;
-			link.dest_tcp_port = destination_tcp_port;
-			link.link_cost = link_cost;
+			router.links[router.num_links].source_router = source_router;
+			router.links[router.num_links].source_tcp_port = source_tcp_port;
+			router.links[router.num_links].destination_router = destination_router;
+			router.links[router.num_links].dest_tcp_port = destination_tcp_port;
+			router.links[router.num_links].link_cost = link_cost;
 			router.num_links++;
 			printf("Destination RID: %c, Destination Port: %d, Source Port: %d, Cost: %d>\n", 
 						destination_router, destination_tcp_port, source_tcp_port, link_cost);
 
 		}
 	}
-
+	
 	int i;
 	for (i = 0; i < router.num_links; i++);
 	{
 		if((router.links[i].l_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 		{
-			printf("Link to Router %c failed.\n", router.links[i].source_router);
+			printf("Socket creation for Router %c failed.\n", router.links[i].source_router);
 		}	
 		
 		// Clear socket buffers
@@ -109,59 +104,63 @@ int main(int argc, char *argv[]) {
 		// Setup for local
 		router.links[i].local_addr.sin_family = AF_INET;
 		router.links[i].local_addr.sin_addr.s_addr = INADDR_ANY;
-		router.links[i].local_addr.sin_port = htons(link.source_tcp_port);
+		router.links[i].local_addr.sin_port = htons(router.links[i].source_tcp_port);
 		// Setup for remote	
 		router.links[i].remote_addr.sin_family = AF_INET;
 		router.links[i].remote_addr.sin_addr.s_addr = INADDR_ANY;
-		router.links[i].remote_addr.sin_port = htons(link.dest_tcp_port);
+		router.links[i].remote_addr.sin_port = htons(router.links[i].dest_tcp_port);
 		
 		// Flag to check on connection later
 		router.links[i].connected = 0;
 	}
 
-
+	sleep(10); 
+	
 	int j;
 	for (j = 0; j < router.num_links; j++)
 	{
-		local_addr = router.links[j].local_addr;
-		remote_addr = router.links[j].remote_addr;
-		
-		if(connect(router.links[j].l_sockfd, (struct sockaddr*)&(remote_addr),
-					sizeof(remote_addr)) == 0)
+		if(connect(router.links[j].l_sockfd, (struct sockaddr*)&(router.links[j].remote_addr),
+					sizeof(router.links[j].remote_addr)) == 0)
 		{
 			router.links[j].connected = 1;
 			router.links[j].sockfd = router.links[j].l_sockfd;
-			printf("Connected from %c to %c \n", 
-					router.links[j].source_router, router.links[j].destination_router);
+			printf("Connected from %c to %c (%d -> %d)\n", 
+					router.links[j].source_router, router.links[j].destination_router,
+					router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
 			
 		}else{
 			router.links[j].connected = 0;
-			printf("Failed to connect from %c to %c \n", 
-					router.links[j].source_router, router.links[j].destination_router);
+			printf("Failed to connect from %c to %c (%d -> %d)\n", 
+					router.links[j].source_router, router.links[j].destination_router,
+					router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
 			//create socket to listen again
-			if ((router.links[i].l_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			if ((router.links[j].l_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			{
-				printf("Socket from %c to %c could not be opened. \n", 
-						router.links[j].source_router, router.links[j].destination_router);
+				printf("Socket from %c to %c could not be opened. (%d -> %d)\n", 
+						router.links[j].source_router, router.links[j].destination_router,
+						router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
 			}
 			//bind socket to local_addr
-			if(bind(router.links[i].l_sockfd, (struct sockaddr*)&(local_addr), sizeof(local_addr)) < 0);
+			if(bind(router.links[j].l_sockfd, (struct sockaddr*)&(router.links[j].local_addr), sizeof(router.links[j].local_addr)) < 0);
 			{
-				printf("Could not bind to socket for %c to %c \n", 
-						router.links[j].source_router, router.links[j].destination_router);
+				printf("Could not bind to socket for %c to %c (%d -> %d)\n", 
+						router.links[j].source_router, router.links[j].destination_router,
+						router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
 				exit(1);
 			}
 			//make socket non blocking.
-			if(fcntl(router.links[i].l_sockfd, F_SETFL, O_NDELAY) < 0)
+			if(fcntl(router.links[j].l_sockfd, F_SETFL, O_NDELAY) < 0)
 			{
-				printf("Could not un-block socket for %c to %c \n",
-						router.links[j].source_router, router.links[j].destination_router);
+				printf("Could not un-block socket for %c to %c (%d -> %d)\n",
+						router.links[j].source_router, router.links[j].destination_router,
+						router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
 			}
 			//listen
-			if(listen(router.links[i].l_sockfd, MAX_LINKED_STATES) < 0)
+			if(listen(router.links[j].l_sockfd, MAX_LINKED_STATES) < 0)
 			{
-				printf("Listen failed for %c to %c \n", 
-						router.links[j].source_router, router.links[j].destination_router);
+				printf("Listen failed for %c to %c (%d -> %d)\n", 
+						router.links[j].source_router, router.links[j].destination_router,
+						router.links[j].source_tcp_port, router.links[j].dest_tcp_port);
 			}	
 		}
 	}
@@ -179,8 +178,8 @@ int main(int argc, char *argv[]) {
 	int k;
 	for(k = 0; k < router.num_links; k++)
 	{
-		router.lsp.link_table[i].destination_router = router.links[i].destination_router;
-		router.lsp.link_table[i].link_cost = router.links[i].link_cost;
+		router.lsp.link_table[k].destination_router = router.links[k].destination_router;
+		router.lsp.link_table[k].link_cost = router.links[k].link_cost;
 	}
 	
 	//Setup routing table
@@ -194,6 +193,42 @@ int main(int argc, char *argv[]) {
 		router.r_table.row[i].dest_tcp_port = router.links[i].dest_tcp_port;
 	}
 	
+	//Listen for LSP's
+	while(1)
+	{
+		for(j = 0; j < router.num_links; j++)
+		{
+			//Accept link
+			if(router.links[j].connected == 0)
+			{
+				router.links[j].sockfd = accept(router.links[j].l_sockfd, NULL, sizeof(struct sockaddr_in));
+				//Establish connection
+				if(router.links[j].sockfd > 0)
+				{
+					router.links[j].connected = 1;
+					printf("Connected %c to %c", 
+							router.links[j].source_router, router.links[j].destination_router);
+					//unblock socket
+					if(fcntl(router.links[j].sockfd, F_SETFL, O_NDELAY) < 0)
+					{
+						printf("Could not unblock socket for %c to %c",
+								router.links[j].source_router, router.links[j].destination_router);
+					}
+				}
+			}
+		}
+		//update/synchronize time and send lsp's
+		time(&curr_time);
+		if(difftime(curr_time, router.time) >= 5.0)
+		{
+			router.time = curr_time;
+			router.lsp.seq++;
+			for(k = 0; k < router.num_links; k++)
+			{
+				
+			}
+		}
+	}
 	sleep(20);
 	return EXIT_SUCCESS;
 }
