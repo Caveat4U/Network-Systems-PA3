@@ -1,4 +1,4 @@
-
+#include <stdio.h>
 #include <netinet/in.h>
 
 #define MAX_LINKED_STATES 10
@@ -57,3 +57,42 @@ typedef struct {
 	Routing_Table r_table;
 	Link_Archive l_archive;
 }Router;
+
+void print_header(Router r)
+{
+	int i;
+	fprintf(stderr,
+	"Router: %c\
+	Num Links: %d\
+	Seq: %d\
+	Time: %d\
+	LSP:\
+		seq: %d\
+		ttl: %d\
+		length: %d\
+		link_table:\
+	",
+	r.router_id,
+	r.num_links,
+	r.seq,
+	(int)r.time,
+	r.lsp.seq,
+	r.lsp.ttl,
+	r.lsp.length
+	);
+	
+	// Print out the link table.
+	for( i = 0; i < MAX_LINKED_STATES; i++)
+	{
+		// TODO: Leaving out invalid states...should I?
+		if(r.lsp.link_table[i].destination_router != 0)
+		{
+			fprintf(stderr,
+			"		LSP %d Destination:%c with cost: %d",
+			i,
+			r.lsp.link_table[i].destination_router,
+			r.lsp.link_table[i].link_cost
+			);	
+		}
+	}
+}
