@@ -260,11 +260,20 @@ int main(int argc, char *argv[]) {
 					// If we receive an exit gracefully code.
 					if(buffer.seq == -999)
 					{
+						
+						router.lsp.seq = -999;
+						
+						//close the connections
 						for (i=0; i<router.num_links; i++)
 						{
+							// spam it to the neighbors -- we don't care if they're connected.
+							send(router.links[i].sockfd, &router.lsp, sizeof(LSP), 0);
 							close(router.links[i].sockfd);
 							close(router.links[i].l_sockfd);
 						}
+						
+						//close the log file
+						fclose(log_file);
 						return EXIT_SUCCESS;
 					}
 					//printf("LSP %d Received from %c", buffer.router_id, buffer.seq);
@@ -310,7 +319,7 @@ void graceful_exit()
 	// That way this program can finish even if you press ctrl+c a bunch of times.
 	signal(SIGINT, graceful_exit);
  
-	printf("you have pressed ctrl-c \n");
+	printf("Now closing all other windows.\n");
 	
 	int i, nbytes;
 	// Send the closing packet
@@ -339,5 +348,6 @@ void graceful_exit()
 	
 	// Close the log file
 	fclose(log_file);
+	sleep(10);
 	exit(0);
 }
