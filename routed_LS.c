@@ -205,7 +205,6 @@ int main(int argc, char *argv[]) {
 	}
 	
 	print_header(&router, log_file);
-	fclose(log_file);
 	//Listen for LSP's
 	while(1)
 	{
@@ -222,8 +221,6 @@ int main(int argc, char *argv[]) {
 					router.links[j].connected = 1;
 					printf("Connected from %c to %c \n", 
 							router.links[j].source_router, router.links[j].destination_router);
-					print_header(&router, log_file);
-					fclose(log_file);
 					//unblock socket
 					if(fcntl(router.links[j].sockfd, F_SETFL, O_NDELAY) < 0)
 					{
@@ -251,8 +248,6 @@ int main(int argc, char *argv[]) {
 					}else{
 						printf("Sent LSP from %c to %c \n",
 								router.links[k].source_router, router.links[k].destination_router);
-						print_header(&router, log_file);
-						fclose(log_file);
 					}
 				}
 			}
@@ -263,6 +258,8 @@ int main(int argc, char *argv[]) {
 			{
 				if((nbytes = recv(router.links[i].sockfd, &buffer, sizeof(LSP), 0)) < 0)
 				{
+					print_header(&router, log_file);
+
 					// If we receive an exit gracefully code.
 					if(buffer.seq == -999)
 					{
